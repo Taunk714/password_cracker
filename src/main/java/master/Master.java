@@ -1,3 +1,7 @@
+package master;
+
+import utils.Server;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -12,6 +16,7 @@ public class Master {
 
     private Server toInterface;
     private Server toWorker;
+    private WorkerInfo wro;
 
 
     public Master() throws IOException {
@@ -61,14 +66,32 @@ public class Master {
     public void listen() throws IOException {
         String request = null;
         while((request = toInterface.receive()) != null){
-            if (request.startsWith("md5")){
-                String md5 = request.substring(4);
-                assign(md5);
-                System.out.println("get md5");
-            }else if (request.startsWith("remove")){
-                // remove
-            }
+            String finalRequest = request;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (finalRequest.startsWith("md5")){
+                            String md5 = finalRequest.substring(4);
 
+                                assign(md5);
+
+                            System.out.println("get md5");
+                        }else if (finalRequest.startsWith("remove")){
+                            // remove
+                            if (workerList.size() == 1){
+                                toInterface.response("only one worker left, can't remove");
+                            }else if (workerList.size() > 1){
+                                WorkerInfo remove = workerList.remove(0);
+                                assign(remove.getTargetMD5(), remove.getStartFrom(), remove.getEndWith());
+                                remove.remove();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
         }
     }
 
@@ -118,8 +141,6 @@ public class Master {
             info.stop();
         }
     }
-
-
 
     public static void main(String[] args) {
         try {

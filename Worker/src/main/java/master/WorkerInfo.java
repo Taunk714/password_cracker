@@ -1,3 +1,5 @@
+package master;
+
 import java.io.IOException;
 
 public class WorkerInfo {
@@ -26,6 +28,9 @@ public class WorkerInfo {
             @Override
             public void run() {
                 try {
+                    WorkerInfo.this.targetMD5 = md5;
+                    WorkerInfo.this.startFrom = startFrom;
+                    WorkerInfo.this.endWith = endWith;
                     toWorker.send(generateRequestString(md5, startFrom, endWith));
                     receive();
                 } catch (IOException e) {
@@ -34,6 +39,10 @@ public class WorkerInfo {
             }
         }).start();
 
+    }
+
+    public void remove() throws IOException {
+        toWorker.send("remove");
     }
 
     public void receive() throws IOException {
@@ -67,5 +76,29 @@ public class WorkerInfo {
         return md5 + " "
                 + startFrom + " "
                 + endWith;
+    }
+
+    public String getTargetMD5() {
+        return targetMD5;
+    }
+
+    public void setTargetMD5(String targetMD5) {
+        this.targetMD5 = targetMD5;
+    }
+
+    public String getStartFrom() {
+        return startFrom;
+    }
+
+    public void setStartFrom(String startFrom) {
+        this.startFrom = startFrom;
+    }
+
+    public String getEndWith() {
+        return endWith;
+    }
+
+    public void setEndWith(String endWith) {
+        this.endWith = endWith;
     }
 }

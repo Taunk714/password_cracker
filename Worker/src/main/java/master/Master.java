@@ -1,3 +1,7 @@
+package master;
+
+import utils.Server;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -12,6 +16,7 @@ public class Master {
 
     private Server toInterface;
     private Server toWorker;
+    private WorkerInfo wro;
 
 
     public Master() throws IOException {

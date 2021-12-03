@@ -1,8 +1,12 @@
+package worker;
+
 import java.io.IOException;
 import java.net.*;
 
 
 import org.apache.commons.codec.digest.DigestUtils;
+import utils.Client;
+import utils.Server;
 
 public class Worker {
 

@@ -1,3 +1,5 @@
+package utils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -57,6 +59,7 @@ public class Server {
 
 	// close socket.
 	public void close() throws IOException {
+		System.out.println("server close");
 		client.close();
 		pr.close();
 		br.close();

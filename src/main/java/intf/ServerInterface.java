@@ -1,4 +1,8 @@
+package intf;
+
 import com.sun.net.httpserver.HttpServer;
+import utils.Client;
+import utils.Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;

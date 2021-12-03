@@ -1,3 +1,5 @@
+package master;
+
 import java.io.IOException;
 
 public class WorkerInfo {
