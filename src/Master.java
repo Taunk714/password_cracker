@@ -5,15 +5,57 @@ import java.util.ArrayList;
  * This is the master node. Get md5 from interface, and assign it to workers.
  */
 public class Master {
-    private static int port = 1202;
-    private ArrayList<WorkerInfo> workerList = new ArrayList<>();
+    private static int port = 1203;
+    private static int workerPort = 1207;
+
+    private ArrayList<WorkerInfo> workerList = new ArrayList<WorkerInfo>();
 
     private Server toInterface;
+    private Server toWorker;
 
 
     public Master() throws IOException {
-        toInterface = new Server(port);
-        listen();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    toWorker = new Server(workerPort);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                while(true){
+                    try {
+                        toWorker.accept();
+                        System.out.println("connect to worker register");
+                        String request = null;
+                        while((request = toWorker.receive())!= null){
+                            if (request.startsWith("register")){
+                                String[] s = request.split(" ");
+                                workerList.add(new WorkerInfo("127.0.0.1", Integer.parseInt(s[2]), Master.this));
+                                System.out.println("worker register");
+                                toWorker.response("success");
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+
+        try{
+            toInterface = new Server(port);
+            toInterface.accept();
+            System.out.println("connect to interface");
+            listen();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+
     }
 
     public void listen() throws IOException {
@@ -22,10 +64,7 @@ public class Master {
             if (request.startsWith("md5")){
                 String md5 = request.substring(4);
                 assign(md5);
-            }else if(request.startsWith("register")){
-                // register
-                String[] s = request.split(" ");
-                workerList.add(new WorkerInfo(s[1], Integer.parseInt(s[2]), this));
+                System.out.println("get md5");
             }else if (request.startsWith("remove")){
                 // remove
             }
@@ -34,7 +73,7 @@ public class Master {
     }
 
     private void assign(String md5) throws IOException {
-        assign(md5, "aaaaa", "ZZZZZ");
+        assign(md5, "AAAAA", "zzzzz");
     }
 
     private void assign(String md5, String startFromAll, String endWithAll) throws IOException {
@@ -51,7 +90,7 @@ public class Master {
             }
             StringBuilder endWith = new StringBuilder();
             if ( i == workerNum -1){
-                endWith = new StringBuilder(endWith);
+                endWith = new StringBuilder(endWithAll);
             }else{
                 for (int j = 0; j < 4; j++) {
                     endWith.append((char) (startFromAll.charAt(j) + (i + 1) * sizePerWorker[j]));
@@ -84,11 +123,7 @@ public class Master {
 
     public static void main(String[] args) {
         try {
-            Server server = new Server(port);
-            String request = null;
-            while((request = server.receive())!= null){
-
-            }
+            new Master();
         } catch (IOException e) {
             e.printStackTrace();
         }
