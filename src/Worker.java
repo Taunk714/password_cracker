@@ -3,12 +3,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.*;
-import java.util.HashMap;
-import java.util.HashSet;
+
 
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class Worker {
+
 
     public static final int PORT_NUM = 1204;
     public static final String MASTER_IP = "127.0.0.1";
@@ -19,35 +19,52 @@ public class Worker {
 //    public static BufferedReader bf;
 //    public static PrintStream ps;
 
+
     private String givenHash;
     private String lowerRange;
     private String upperRange;
 
     public static void main(String args[]){
-        while(true){
-            connectToMaster();
-            String msgReceived = getMsgFromMaster();
-            if (!msgReceived.isEmpty()) {
-                if (msgReceived.equals("remove")){
-                    socket.response("remove");
-                    disconnectFromMaster();
-                }
-                String[] msgs = msgReceived.split(" ");
-                Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
-                String crackRes = worker.crack();
-                if (crackRes.isEmpty()){
-                    socket.response("fail");
-                } else {
-                    socket.response("success" + crackRes);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                connectToMaster();
+                while(true){
+                    try {
+                        socket.accept();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    String msgReceived =null;
+                    while ((msgReceived= getMsgFromMaster()) != null) {
+                        if (msgReceived.equals("remove")){
+                            socket.response("remove");
+                            disconnectFromMaster();
+                        }else if (msgReceived.startsWith("stop")){
+                            // interrupt
+
+                        }else{
+                            String[] msgs = msgReceived.split(" ");
+                            Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
+                            String crackRes = worker.crack();
+                            if (crackRes.isEmpty()){
+                                socket.response("fail");
+                            } else {
+                                socket.response("success " + crackRes);
+                            }
+                        }
+                    }
                 }
             }
-        }
-
+        }).start();
     }
 
     public static String getMsgFromMaster(){
         String msgReceived = "";
         try{
+
             msgReceived = socket.receive();
         } catch (IOException e) {
             e.printStackTrace();
@@ -83,11 +100,6 @@ public class Worker {
                 }
             }
         }).start();
-        try {
-            socket.accept();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -96,6 +108,7 @@ public class Worker {
             socket.close();
 //            bf.close();
 //            ps.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

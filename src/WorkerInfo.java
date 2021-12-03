@@ -22,8 +22,18 @@ public class WorkerInfo {
     }
 
     public void send(String md5, String startFrom, String endWith) throws IOException {
-        toWorker.send(generateRequestString(md5, startFrom, endWith));
-        toWorker.receive();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    toWorker.send(generateRequestString(md5, startFrom, endWith));
+                    receive();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
     }
 
     public void receive() throws IOException {
@@ -31,7 +41,7 @@ public class WorkerInfo {
         while((request = toWorker.receive())!=null){
             if (request.startsWith("success")){
                 String[] s = request.split(" ");
-//                master.success(s[1], this);
+                master.success(s[1], this);
             }else if (request.startsWith("fail")){
 
             }else if (request.startsWith("remove")){
