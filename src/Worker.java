@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.*;
 
 
@@ -16,8 +13,6 @@ public class Worker {
 
 
     public static Server socket;
-//    public static BufferedReader bf;
-//    public static PrintStream ps;
 
 
     private String givenHash;
@@ -37,28 +32,58 @@ public class Worker {
                         e.printStackTrace();
                     }
 
-                    String msgReceived =null;
+                    String msgReceived;
+                    CrackingThread crackingTh = null;
                     while ((msgReceived= getMsgFromMaster()) != null) {
                         if (msgReceived.equals("remove")){
+                            crackingTh.interrupt();
                             socket.response("remove");
                             disconnectFromMaster();
                         }else if (msgReceived.startsWith("stop")){
                             // interrupt
-
+                            crackingTh.interrupt();
                         }else{
                             String[] msgs = msgReceived.split(" ");
                             Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
-                            String crackRes = worker.crack();
-                            if (crackRes.isEmpty()){
-                                socket.response("fail");
-                            } else {
-                                socket.response("success " + crackRes);
-                            }
+                            crackingTh = new CrackingThread(worker);
+                            crackingTh.start();
+//                            String crackRes = worker.crack();
+//                            if (crackRes.isEmpty()){
+//                                socket.response("fail");
+//                            } else {
+//                                socket.response("success " + crackRes);
+//                            }
                         }
                     }
                 }
             }
         }).start();
+    }
+
+
+    private static class CrackingThread extends Thread {
+        private Worker worker;
+
+        public CrackingThread(Worker worker){
+            this.worker = worker;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                if(Thread.interrupted()) {
+                    socket.response("cracking process is interrupted");
+                    break;
+                }
+                String crackRes = worker.crack();
+                if (crackRes.isEmpty()){
+                    socket.response("fail");
+                } else {
+                    socket.response("success " + crackRes);
+                }
+                return;
+            }
+        }
     }
 
     public static String getMsgFromMaster(){
@@ -74,19 +99,14 @@ public class Worker {
     }
 
     public static void connectToMaster() {
-
         try {
             socket = new Server(PORT_NUM);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
         new Thread(new Runnable() {
             @Override
             public void run() {
-
                 try {
                     Client client = new Client(MASTER_IP, 1207);
                     client.send("register " + Inet4Address.getLocalHost() + " " + PORT_NUM);
@@ -100,14 +120,11 @@ public class Worker {
                 }
             }
         }).start();
-
     }
 
     public static void disconnectFromMaster() {
         try{
             socket.close();
-//            bf.close();
-//            ps.close();
 
         } catch (IOException e) {
             e.printStackTrace();
