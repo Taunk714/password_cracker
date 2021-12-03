@@ -74,7 +74,7 @@ public class Master {
                         if (finalRequest.startsWith("md5")){
                             String md5 = finalRequest.substring(4);
 
-                                assign(md5);
+                            assign(md5);
 
                             System.out.println("get md5");
                         }else if (finalRequest.startsWith("remove")){
@@ -92,6 +92,7 @@ public class Master {
                     }
                 }
             }).start();
+            String stop = "";
         }
     }
 

@@ -31,12 +31,12 @@ public class ServerInterface {
 
 	public static void main(String [] args) throws IOException{
 		final Server server = new Server(_PORT);
+		Client client = new Client(masterIp, masterPort);
 		while(true){
 			server.accept();
 			System.out.println("connect to front end");
 			String request = null;
-			Client client = null;
-			client = new Client(masterIp, masterPort);
+
 			while ((request = server.receive())!= null) {
 				final String finalRequest = request;
 				final Client finalClient = client;
@@ -59,6 +59,7 @@ public class ServerInterface {
 								long start = System.currentTimeMillis();
 								finalClient.send("md5 " + type);
 								String receive = finalClient.receive();
+//								finalClient.close();
 
 								long end = System.currentTimeMillis();
 								long time = end - start;

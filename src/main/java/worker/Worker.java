@@ -46,6 +46,7 @@ public class Worker {
                         }else if (msgReceived.startsWith("stop")){
                             // interrupt
                             crackingTh.interrupt();
+                            System.out.println("worker stop");
                         }else{
                             String[] msgs = msgReceived.split(" ");
                             Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);

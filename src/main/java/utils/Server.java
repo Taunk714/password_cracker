@@ -44,6 +44,7 @@ public class Server {
 
 	public String receive() throws IOException {
 		try{
+			System.out.println("server waiting");
 			return br.readLine();
 		} catch (IOException e) {
 			return null;

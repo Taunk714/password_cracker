@@ -49,7 +49,7 @@ public class WorkerInfo {
 
     public void receive() throws IOException {
         String request = null;
-        while((request = toWorker.receive())!=null){
+        if ((request = toWorker.receive())!=null){
             if (request.startsWith("success")){
                 String[] s = request.split(" ");
                 master.success(s[1], this);
