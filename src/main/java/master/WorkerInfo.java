@@ -1,5 +1,7 @@
 package master;
 
+import utils.Client;
+
 import java.io.IOException;
 
 public class WorkerInfo {

@@ -30,7 +30,7 @@ public class ServerInterface {
 	}
 
 	public static void main(String [] args) throws IOException{
-		Server server = new Server(_PORT);
+		final Server server = new Server(_PORT);
 		while(true){
 			server.accept();
 			System.out.println("connect to front end");
@@ -38,8 +38,8 @@ public class ServerInterface {
 			Client client = null;
 			client = new Client(masterIp, masterPort);
 			while ((request = server.receive())!= null) {
-				String finalRequest = request;
-				Client finalClient = client;
+				final String finalRequest = request;
+				final Client finalClient = client;
 				if (finalRequest.startsWith("GET")) {
 					new Thread(new Runnable() {
 						@Override
