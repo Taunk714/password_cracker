@@ -4,6 +4,7 @@ import utils.Server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is the master node. Get md5 from interface, and assign it to workers.
@@ -16,7 +17,9 @@ public class Master {
 
     private Server toInterface;
     private Server toWorker;
-    private WorkerInfo wro;
+
+    private AtomicInteger currentWorker = new AtomicInteger(0);
+    private AtomicInteger availableWorker = new AtomicInteger(0);
 
 
     public Master() throws IOException {
@@ -37,6 +40,8 @@ public class Master {
                             if (request.startsWith("register")){
                                 String[] s = request.split(" ");
                                 workerList.add(new WorkerInfo("127.0.0.1", Integer.parseInt(s[2]), Master.this));
+                                currentWorker.incrementAndGet();
+                                availableWorker.incrementAndGet();
                                 System.out.println("worker register");
                                 toWorker.response("success");
                             }
@@ -79,12 +84,18 @@ public class Master {
                             System.out.println("get md5");
                         }else if (finalRequest.startsWith("remove")){
                             // remove
-                            if (workerList.size() == 1){
+                            if (currentWorker.get() == 1){
                                 toInterface.response("only one worker left, can't remove");
-                            }else if (workerList.size() > 1){
+                            }else if (currentWorker.get() > 1){
                                 WorkerInfo remove = workerList.remove(0);
                                 assign(remove.getTargetMD5(), remove.getStartFrom(), remove.getEndWith());
                                 remove.remove();
+                            }
+                        }else if (finalRequest.startsWith("add")){
+                            if (currentWorker.get() >= availableWorker.get()+1){
+                                toInterface.response("Available worker reach maximum");
+                            }else{
+                                currentWorker.incrementAndGet();
                             }
                         }
                     } catch (IOException e) {
@@ -104,22 +115,34 @@ public class Master {
         int workerNum = workerList.size();
         int[] sizePerWorker = new int[5];
         for (int i = 0; i < 5; i++) {
-            sizePerWorker[i] = (endWithAll.charAt(i) - startFromAll.charAt(i) + 1);
+            sizePerWorker[i] = (Math.max(endWithAll.charAt(i)-96, 0) - Math.max(91-startFromAll.charAt(i),0));
         }
         for (int i = 0; i < workerNum; i++) {
             WorkerInfo workerInfo = workerList.get(i);
             StringBuilder startFrom = new StringBuilder();
             for (int j = 0; j < 5; j++) {
-                startFrom.append((char) (startFromAll.charAt(j) + i * sizePerWorker[j]));
+                char s = (char) (startFromAll.charAt(j) + i * sizePerWorker[j]);
+                if (s <=96 && s >= 91){
+                    s += 6;
+                }
+                startFrom.append(s);
             }
             StringBuilder endWith = new StringBuilder();
             if ( i == workerNum -1){
                 endWith = new StringBuilder(endWithAll);
             }else{
                 for (int j = 0; j < 4; j++) {
-                    endWith.append((char) (startFromAll.charAt(j) + (i + 1) * sizePerWorker[j]));
+                    char s = (char) (startFromAll.charAt(j) +( i+1) * sizePerWorker[j]);
+                    if (s <=96 && s >= 91){
+                        s += 6;
+                    }
+                    endWith.append(s);
                 }
-                endWith.append((char) (startFromAll.charAt(4) + (i + 1) * sizePerWorker[4] - 1));
+                char s = (char) (startFromAll.charAt(4) + (i + 1) * sizePerWorker[4] - 1);
+                if (s <=96 && s >= 91){
+                    s += 6;
+                }
+                endWith.append(s);
             }
             workerInfo.send(md5, startFrom.toString(), endWith.toString());
         }
