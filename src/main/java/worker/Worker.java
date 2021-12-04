@@ -11,12 +11,13 @@ import utils.Server;
 public class Worker {
 
 
-    public static final int PORT_NUM = 1204;
+    public static final int PORT_NUM = 1211;
     public static final String MASTER_IP = "127.0.0.1";
     private static final int MASTER_PORT = 1203;
 
 
-    public static Server socket;
+//    public static Server socket;
+    public static ThreadLocal<Server> threadLocal = new ThreadLocal<>();
 
 
     private String givenHash;
@@ -24,45 +25,48 @@ public class Worker {
     private String upperRange;
 
     public static void main(String args[]){
+        for (int i = 0; i < 3; i++) {
+            int finalI = i;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    connectToMaster(1211+ finalI);
+                    while(true){
+                        try {
+                            threadLocal.get().accept();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                connectToMaster();
-                while(true){
-                    try {
-                        socket.accept();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    String msgReceived;
-                    CrackingThread crackingTh = null;
-                    while ((msgReceived= getMsgFromMaster()) != null) {
-                        if (msgReceived.equals("remove")){
-                            crackingTh.interrupt();
-                            socket.response("remove");
-                            disconnectFromMaster();
-                        }else if (msgReceived.startsWith("stop")){
-                            // interrupt
-                            crackingTh.interrupt();
-                            System.out.println("worker stop");
-                        }else{
-                            String[] msgs = msgReceived.split(" ");
-                            Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
-                            crackingTh = new CrackingThread(worker);
-                            crackingTh.start();
+                        String msgReceived;
+                        CrackingThread crackingTh = null;
+                        while ((msgReceived= getMsgFromMaster()) != null) {
+                            if (msgReceived.equals("remove")){
+                                crackingTh.interrupt();
+                                threadLocal.get().response("remove");
+                                disconnectFromMaster();
+                            }else if (msgReceived.startsWith("stop")){
+                                // interrupt
+                                crackingTh.interrupt();
+                                System.out.println("worker stop");
+                            }else{
+                                String[] msgs = msgReceived.split(" ");
+                                Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
+                                crackingTh = new CrackingThread(worker);
+                                crackingTh.start();
 //                            String crackRes = worker.crack();
 //                            if (crackRes.isEmpty()){
-//                                socket.response("fail");
+//                                threadLocal.get().response("fail");
 //                            } else {
-//                                socket.response("success " + crackRes);
+//                                threadLocal.get().response("success " + crackRes);
 //                            }
+                            }
                         }
                     }
                 }
-            }
-        }).start();
+            }).start();
+        }
+
     }
 
 
@@ -77,14 +81,14 @@ public class Worker {
         public void run() {
             while (true) {
                 if(Thread.interrupted()) {
-                    socket.response("cracking process is interrupted");
+                    threadLocal.get().response("cracking process is interrupted");
                     break;
                 }
                 String crackRes = worker.crack();
                 if (crackRes.isEmpty()){
-                    socket.response("fail");
+                    threadLocal.get().response("fail");
                 } else {
-                    socket.response("success " + crackRes);
+                    threadLocal.get().response("success " + crackRes);
                 }
                 return;
             }
@@ -95,7 +99,7 @@ public class Worker {
         String msgReceived = "";
         try{
 
-            msgReceived = socket.receive();
+            msgReceived = threadLocal.get().receive();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -103,9 +107,10 @@ public class Worker {
         return msgReceived;
     }
 
-    public static void connectToMaster() {
+    public static void connectToMaster(int PORT_NUM) {
         try {
-            socket = new Server(PORT_NUM);
+            threadLocal.set(new Server(PORT_NUM));
+//            threadLocal.get() =
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -129,7 +134,7 @@ public class Worker {
 
     public static void disconnectFromMaster() {
         try{
-            socket.close();
+            threadLocal.get().close();
 
         } catch (IOException e) {
             e.printStackTrace();
