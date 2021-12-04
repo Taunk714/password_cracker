@@ -52,7 +52,7 @@ public class Worker {
                             }else{
                                 String[] msgs = msgReceived.split(" ");
                                 Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
-                                crackingTh = new CrackingThread(worker);
+                                crackingTh = new CrackingThread(worker, threadLocal.get());
                                 crackingTh.start();
 //                            String crackRes = worker.crack();
 //                            if (crackRes.isEmpty()){
@@ -72,23 +72,25 @@ public class Worker {
 
     private static class CrackingThread extends Thread {
         private Worker worker;
+        private Server server;
 
-        public CrackingThread(Worker worker){
+        public CrackingThread(Worker worker, Server server){
             this.worker = worker;
+            this.server = server;
         }
 
         @Override
         public void run() {
             while (true) {
                 if(Thread.interrupted()) {
-                    threadLocal.get().response("cracking process is interrupted");
+                    server.response("cracking process is interrupted");
                     break;
                 }
                 String crackRes = worker.crack();
                 if (crackRes.isEmpty()){
-                    threadLocal.get().response("fail");
+                    server.response("fail");
                 } else {
-                    threadLocal.get().response("success " + crackRes);
+                    server.response("success " + crackRes);
                 }
                 return;
             }
