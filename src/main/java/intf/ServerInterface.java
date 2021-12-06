@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This is the interface of the server, we don't want our master and worker nodes to be exposed.
@@ -66,7 +67,11 @@ public class ServerInterface {
 								System.out.println(time);
 								System.out.println("receive:" + receive);
 
-								server.response("HTTP/1.1 200 OK\r\n\r\n" + receive);
+								server.response("HTTP/1.1 200 OK\r\n"
+										+ "Content-Length: " + receive.getBytes().length + "\r\n"
+										+ "Content-Type: text/html; charset-utf-8\r\n"
+										+ "Access-Control-Allow-Origin: *\r\n"
+										+ receive);
 							} catch (IOException e) {
 								e.printStackTrace();
 							}

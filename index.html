@@ -1,0 +1,88 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>CS 655 Password Cracker</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+        <script src="https://unpkg.com/element-ui@2.15.7/lib/index.js"></script>
+        <script src="https://cdn.bootcdn.net/ajax/libs/blueimp-md5/2.18.0/js/md5.js"></script>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    </head>
+    <body>
+      <div>
+          <div id="app" class="grid-content bg-blue" style = "text-align: center; height: 46px; line-height: 46px;">
+            <p style = "color: Aliceblue; font-size: 20px">CS655 Geni mini project: Password Cracker</p>
+          </div>
+
+          <div id ="app-2" v-bind:class = "{ active: isActive }">
+            <input v-model="text" placeholder="Please enter the password" style = "font-size: 13px; height: 38px; width: 180px">
+            <button v-on:click="autogenerate" style = "font-size: 13px; height: 38px; width: 120px">AutoGenerate</button>
+            <button v-on:click="link" style = "font-size: 13px; height: 38px; width: 90px">Enter</button>
+            <table style = "display: inline; margin: 0 auto">
+              <tr><td>Send: </td><td><input v-model="send_md5"style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
+              <tr><td>Receive: </td><td><input id="result" style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
+            </table>
+          </div>
+
+          <div id="app-3" class="grid-content bg-blue" style = "text-align: center; height: 46px; line-height: 46px">
+            <p style = "color: Aliceblue">Team member: Yuqiu Lin, Fangxu Zhou, Chuqian Zeng, Chenyu Cao</p>
+          </div>
+        </div>
+        
+        <script type = "text/javascript">
+          var vm2 = new Vue({
+            el: '#app-2',
+            data: {
+                text: "",
+                passwordLength: 5,
+                isActive: true,
+                send_md5: ""
+            },
+            methods: {
+              autogenerate: function(event){
+                let characters = "abcde"
+                let password = ""
+                for (let i = 0; i < this.passwordLength; i++) {
+                  password += characters.charAt(Math.floor(Math.random() * characters.length))
+                }
+                this.text = password
+                this.send_md5 = md5(password)
+                //alert(password)
+              },
+              
+              link: function(event){
+                //window.open('http://127.0.0.1:1202/' + md5(this.text))
+                var ajax = new XMLHttpRequest();
+                ajax.open('get','http://127.0.0.1:1202/' + md5(this.text));
+                ajax.send(null);
+                ajax.onreadystatechange = function () {
+                  if (ajax.readyState==4 && ajax.status==200) {
+                    document.getElementById('result').value = ajax.responseText
+                  }
+                }
+                //console.log()
+              }
+            }
+          })
+        </script>
+
+        <style type = "text/css">
+          .active {
+            background-color: #B7CEFA; 
+            text-align: center;
+            height: 590px;
+            border-radius: 4px;
+            line-height: 590px;
+            margin-bottom: -16px
+          }
+          .bg-blue {
+            background: #409EFF;
+          }
+          .grid-content {
+              border-radius: 4px;
+              min-height: 46px;
+          }
+
+        </style>
+        
+    </body>
+</html>
