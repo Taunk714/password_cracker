@@ -70,12 +70,13 @@ public class ServerInterface {
 								System.out.println(time);
 								System.out.println("receive:" + receive + time);
 
+								String response_str = receive + " " + time + " ms";
 								server.response("HTTP/1.1 200 OK\r\n"
 										+ "Access-Control-Allow-Origin:*\r\n"
 										+ "Access-Control-Allow-Headers:*\r\n"
 										+ "Content-Type: text/html; charset=utf-8\r\n"
-										+ "Content-Length:" + receive.getBytes().length + "\r\n\r\n"
-										+ receive);
+										+ "Content-Length:" + response_str.getBytes().length + "\r\n\r\n"
+										+ response_str);
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
