@@ -14,12 +14,16 @@
           </div>
 
           <div id ="app-2" v-bind:class = "{ active: isActive }">
-            <input v-model="text" placeholder="Please enter the password" style = "font-size: 13px; height: 38px; width: 180px">
+            <table style = "display: inline; margin: 0 auto">
+              <tr><td><input v-model="text" placeholder="Password" style = "font-size: 13px; height: 38px; width: 180px"></td></tr>
+              <tr><td><input v-model="worker_num"  placeholder="Number of workers (default 3)" style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
+            </table>
+            
             <button v-on:click="autogenerate" style = "font-size: 13px; height: 38px; width: 120px">AutoGenerate</button>
             <button v-on:click="link" style = "font-size: 13px; height: 38px; width: 90px">Enter</button>
             <table style = "display: inline; margin: 0 auto">
-              <tr><td>Send: </td><td><input v-model="send_md5"style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
-              <tr><td>Receive: </td><td><input id="result" style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
+              <tr><td>Send: </td><td id="send_md5"style = "font-size: 13px; height: 38px; width: 180px"></td></tr>
+              <tr><td>Receive: </td><td id="result" style = "font-size: 13px; height: 38px; width: 180px"></td></tr>
             </table>
           </div>
 
@@ -33,30 +37,37 @@
             el: '#app-2',
             data: {
                 text: "",
+                worker_num: "",
                 passwordLength: 5,
                 isActive: true,
                 send_md5: ""
             },
             methods: {
               autogenerate: function(event){
-                let characters = "abcde"
+                let characters = "abcdeABCDE"
                 let password = ""
                 for (let i = 0; i < this.passwordLength; i++) {
                   password += characters.charAt(Math.floor(Math.random() * characters.length))
                 }
                 this.text = password
-                this.send_md5 = md5(password)
+                document.getElementById('send_md5').innerText = md5(password)
+                //this.send_md5 = md5(password)
                 //alert(password)
               },
               
               link: function(event){
-                // window.open('http://127.0.0.1:1202/' + md5(this.text))
+                // Get the number of workers
+                var n = this.worker_num
+                if (n.length == 0 || n.length > 1 || n[0] < '1' || n[0] > '9') {
+                  n = "3"
+                }
+
                 var ajax = new XMLHttpRequest();
-                ajax.open('get','http://127.0.0.1:1202/4&' + md5(this.text));
+                ajax.open('get','http://127.0.0.1:1202/' + n + "&" + md5(this.text));
                 ajax.send(null);
                 ajax.onreadystatechange = function () {
                   if (ajax.readyState==4 && ajax.status==200) {
-                    document.getElementById('result').value = ajax.responseText
+                    document.getElementById('result').innerText = ajax.responseText
                   }
                 }
                 //console.log()
