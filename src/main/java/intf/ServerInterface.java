@@ -68,7 +68,7 @@ public class ServerInterface {
 								long end = System.currentTimeMillis();
 								long time = end - start;
 								System.out.println(time);
-								System.out.println("receive:" + receive + time);
+								System.out.println("Receive: " + receive + time);
 
 								String response_str = receive + " " + time + " ms";
 								server.response("HTTP/1.1 200 OK\r\n"
