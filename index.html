@@ -63,7 +63,7 @@
                 }
 
                 var ajax = new XMLHttpRequest();
-                ajax.open('get','http://127.0.0.1:1202/' + n + "|" + md5(this.text));
+                ajax.open('get','http://127.0.0.1:1202/' + n + "%" + md5(this.text));
                 ajax.send(null);
                 ajax.onreadystatechange = function () {
                   if (ajax.readyState==4 && ajax.status==200) {
