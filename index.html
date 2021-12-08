@@ -50,7 +50,8 @@
                   password += characters.charAt(Math.floor(Math.random() * characters.length))
                 }
                 this.text = password
-                document.getElementById('send_md5').innerText = md5(password)
+                document.getElementById('send_md5').innerText = ""
+                document.getElementById('result').innerText = ""
                 //this.send_md5 = md5(password)
                 //alert(password)
               },
@@ -61,6 +62,9 @@
                 if (n.length == 0 || n.length > 1 || n[0] < '1' || n[0] > '9') {
                   n = "3"
                 }
+                
+                document.getElementById('send_md5').innerText = md5(this.text)
+                document.getElementById('result').innerText = ""
 
                 var ajax = new XMLHttpRequest();
                 ajax.open('get','http://127.0.0.1:1202/' + n + "&" + md5(this.text));
