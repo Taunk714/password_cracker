@@ -18,8 +18,9 @@ public class Master {
     private Server toInterface;
     private Server toWorker;
 
-    private AtomicInteger currentWorker = new AtomicInteger(0);
-    private AtomicInteger availableWorker = new AtomicInteger(0);
+    private AtomicInteger currentWorker = new AtomicInteger(3);
+    private AtomicInteger availableWorker = new AtomicInteger(9);
+    private AtomicInteger getResponse = new AtomicInteger(0);
 
 
     public Master() throws IOException {
@@ -61,11 +62,6 @@ public class Master {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
-
     }
 
     public void listen() throws IOException {
@@ -75,32 +71,49 @@ public class Master {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        if (finalRequest.startsWith("md5")){
-                            String md5 = finalRequest.substring(4);
-
-                            assign(md5);
-
-                            System.out.println("get md5");
-                        }else if (finalRequest.startsWith("remove")){
-                            // remove
-                            if (currentWorker.get() == 1){
-                                toInterface.response("only one worker left, can't remove");
-                            }else if (currentWorker.get() > 1){
-                                WorkerInfo remove = workerList.remove(0);
-                                assign(remove.getTargetMD5(), remove.getStartFrom(), remove.getEndWith());
-                                remove.remove();
-                            }
-                        }else if (finalRequest.startsWith("add")){
-                            if (currentWorker.get() >= availableWorker.get()+1){
-                                toInterface.response("Available worker reach maximum");
-                            }else{
-                                currentWorker.incrementAndGet();
-                            }
+                    String[] split = finalRequest.split("&");
+                    int workerNum = 3;
+                    try{
+                        workerNum = Integer.parseInt(split[0]);
+                        if (workerNum > availableWorker.get() || workerNum <= 0){
+                            workerNum = availableWorker.get();
                         }
+                    }catch (Exception e){
+                        workerNum = Math.min(availableWorker.get(),3);
+                    }
+
+                    currentWorker.set(workerNum);
+                    String md5 = split[1];
+                    try {
+                        assign(md5);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
+
+//                        if (finalRequest.startsWith("md5")){
+//                            String md5 = finalRequest.substring(4);
+//
+//                            assign(md5);
+//
+//                            System.out.println("get md5");
+//                        }
+//                        else if (finalRequest.startsWith("remove")){
+//                            // remove
+//                            if (currentWorker.get() == 1){
+//                                toInterface.response("only one worker left, can't remove");
+//                            }else if (currentWorker.get() > 1){
+//                                WorkerInfo remove = workerList.remove(0);
+//                                assign(remove.getTargetMD5(), remove.getStartFrom(), remove.getEndWith());
+//                                remove.remove();
+//                            }
+//                        }else if (finalRequest.startsWith("add")){
+//                            if (currentWorker.get() >= availableWorker.get()+1){
+//                                toInterface.response("Available worker reach maximum");
+//                            }else{
+//                                currentWorker.incrementAndGet();
+//                            }
+//                        }
                 }
             }).start();
             String stop = "";
@@ -112,10 +125,10 @@ public class Master {
     }
 
     private void assign(String md5, String startFromAll, String endWithAll) throws IOException {
-        int workerNum = workerList.size();
+        int workerNum = currentWorker.get();
         int[] sizePerWorker = new int[5];
         for (int i = 0; i < 5; i++) {
-            sizePerWorker[i] = (Math.max(endWithAll.charAt(i)-96, 0) - Math.max(91-startFromAll.charAt(i),0));
+            sizePerWorker[i] = (Math.max(endWithAll.charAt(i)-96, 0) + Math.max(91-startFromAll.charAt(i),0))/workerNum;
         }
         for (int i = 0; i < workerNum; i++) {
             WorkerInfo workerInfo = workerList.get(i);
@@ -164,6 +177,17 @@ public class Master {
         for (WorkerInfo info : workerList) {
             info.stop();
         }
+    }
+
+    public void fail(WorkerInfo workerInfo) throws IOException {
+        int i = getResponse.incrementAndGet();
+        if (i == currentWorker.get()){
+            toInterface.response("fail, can't find ans");
+        }
+//        toInterface.response("fail");
+//        for (WorkerInfo info : workerList) {
+//            info.stop();
+//        }
     }
 
     public static void main(String[] args) {

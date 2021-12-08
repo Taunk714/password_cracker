@@ -2,6 +2,7 @@ package worker;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.logging.Logger;
 
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -15,6 +16,10 @@ public class Worker {
     public static final String MASTER_IP = "127.0.0.1";
     private static final int MASTER_PORT = 1203;
 
+    private static final Logger logger = Logger.getLogger("worker");
+
+    private long counter = 0;
+
 
 //    public static Server socket;
     public static ThreadLocal<Server> threadLocal = new ThreadLocal<>();
@@ -26,7 +31,7 @@ public class Worker {
     private String upperRange;
 
     public static void main(String args[]){
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             int finalI = i;
             new Thread(new Runnable() {
                 @Override
@@ -43,12 +48,17 @@ public class Worker {
                         CrackingThread crackingTh = null;
                         while ((msgReceived= getMsgFromMaster()) != null) {
                             if (msgReceived.equals("remove")){
-                                crackingTh.interrupt();
+                                if (crackingTh != null) {
+                                    crackingTh.interrupt();
+                                }
                                 threadLocal.get().response("remove");
                                 disconnectFromMaster();
                             }else if (msgReceived.startsWith("stop")){
                                 // interrupt
-                                crackingTh.interrupt();
+
+                                if (crackingTh != null) {
+                                    crackingTh.interrupt();
+                                }
                                 System.out.println("worker stop");
                             }else{
                                 String[] msgs = msgReceived.split(" ");
@@ -89,7 +99,7 @@ public class Worker {
                 }
                 String crackRes = worker.crack();
                 if (crackRes.isEmpty()){
-                    server.response("fail");
+                    server.response("fail " + worker.counter);
                 } else {
                     server.response("success " + crackRes);
                 }
@@ -148,6 +158,8 @@ public class Worker {
         this.givenHash = givenHash;
         this.lowerRange = lowerRange;
         this.upperRange = upperRange;
+        this.counter = 0;
+        logger.info(this.toString() + ": range from " + lowerRange +" to " + upperRange);
     }
 
     public String crack() {
@@ -155,35 +167,55 @@ public class Worker {
         char[] upperRangeLst = upperRange.toCharArray();
         boolean cracked;
         StringBuilder strToHash = new StringBuilder();
-        for (char a0 = lowerRangeLst[0]; a0 <= upperRangeLst[0]; a0++) {
+        for (char a0 = lowerRangeLst[0]; a0 <= 'z'; a0++) {
             if (a0>= 91 && a0 <= 96){
                 continue;
             }
             strToHash.append(a0);
-            for (char a1 = lowerRangeLst[1]; a1 <= upperRangeLst[1]; a1++) {
+            for (char a1 = lowerRangeLst[1]; a1 <= 'z'; a1++) {
                 if (a1>= 91 && a1 <= 96){
                     continue;
                 }
                 strToHash.append(a1);
-                for (char a2 = lowerRangeLst[2]; a2 <= upperRangeLst[2]; a2++) {
+                if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                    strToHash.deleteCharAt(1);
+                    continue;
+                }
+                for (char a2 = 'A'; a2 <= 'z'; a2++) {
                     if (a2>= 91 && a2 <= 96){
                         continue;
                     }
                     strToHash.append(a2);
-                    for (char a3 = lowerRangeLst[3]; a3 <= upperRangeLst[3]; a3++) {
+                    if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                        strToHash.deleteCharAt(2);
+                        continue;
+                    }
+                    for (char a3 = 'A'; a3 <= 'z'; a3++) {
                         if (a3>= 91 && a3 <= 96){
                             continue;
                         }
                         strToHash.append(a3);
-                        for (char a4 = lowerRangeLst[4]; a4 <= upperRangeLst[4]; a4++) {
+                        if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                            strToHash.deleteCharAt(3);
+                            continue;
+                        }
+                        for (char a4 = 'A'; a4 <= 'z'; a4++) {
                             if (a4>= 91 && a4 <= 96){
                                 continue;
                             }
                             strToHash.append(a4);
+                            if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                                strToHash.deleteCharAt(4);
+                                continue;
+                            }
+//                            System.out.println("cracking: " + strToHash.toString());
+                            counter++;
                             String generatedHash = generateHash(strToHash.toString());
                             cracked = compareHash(generatedHash);
-                            if (cracked)
+                            if (cracked) {
+                                System.out.println("find ans " + counter);
                                 return strToHash.toString();
+                            }
                             strToHash.deleteCharAt(4);
                         }
                         strToHash.deleteCharAt(3);

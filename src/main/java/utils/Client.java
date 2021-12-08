@@ -87,7 +87,7 @@ public class Client {
 
 	// close connection
 	public void close() throws IOException {
-		System.out.println("client close");
+//		System.out.println("client close");
 		s.close();
 		pr.close();
 		br.close();

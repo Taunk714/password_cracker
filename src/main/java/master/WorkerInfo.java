@@ -54,7 +54,7 @@ public class WorkerInfo {
                 String[] s = request.split(" ");
                 master.success(s[1], this);
             }else if (request.startsWith("fail")){
-
+                master.fail(this);
             }else if (request.startsWith("remove")){
                 String[] s = request.split(" ");
                 if (s.length == 1){

@@ -44,7 +44,7 @@ public class Server {
 
 	public String receive() throws IOException {
 		try{
-			System.out.println("server waiting");
+//			System.out.println("server waiting");
 			return br.readLine();
 		} catch (IOException e) {
 			return null;
@@ -60,7 +60,7 @@ public class Server {
 
 	// close socket.
 	public void close() throws IOException {
-		System.out.println("server close");
+//		System.out.println("server close");
 		client.close();
 		pr.close();
 		br.close();

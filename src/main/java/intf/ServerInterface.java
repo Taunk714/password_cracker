@@ -48,24 +48,27 @@ public class ServerInterface {
 							try {
 								String[] s = finalRequest.split(" ");
 								String type = s[1].substring(1);
-								System.out.println("md5:" + type);
+//								String[] split = type2.split("|");
+//								String type = split[1];
 
-								if (type.equals("remove")) {
-									finalClient.send("remove");
-									String receive = finalClient.receive();
-									server.response("HTTP/1.1 200 OK\r\n\r\n" + receive);
-									return;
-								}
+								System.out.println("forward " + type);
+//
+//								if (type.equals("remove")) {
+//									finalClient.send("remove");
+//									String receive = finalClient.receive();
+//									server.response("HTTP/1.1 200 OK\r\n\r\n" + receive);
+//									return;
+//								}
 
 								long start = System.currentTimeMillis();
-								finalClient.send("md5 " + type);
+								finalClient.send(type);
 								String receive = finalClient.receive();
 //								finalClient.close();
 
 								long end = System.currentTimeMillis();
 								long time = end - start;
 								System.out.println(time);
-								System.out.println("receive:" + receive);
+								System.out.println("receive:" + receive + time);
 
 								server.response("HTTP/1.1 200 OK\r\n"
 										+ "Content-Length: " + receive.getBytes().length + "\r\n"
