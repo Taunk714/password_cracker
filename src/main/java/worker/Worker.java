@@ -19,6 +19,7 @@ public class Worker {
     private static final Logger logger = Logger.getLogger("worker");
 
     private long counter = 0;
+    private int id;
 
 
 //    public static Server socket;
@@ -62,7 +63,14 @@ public class Worker {
                                 System.out.println("worker stop");
                             }else{
                                 String[] msgs = msgReceived.split(" ");
-                                Worker worker = new Worker(msgs[0], msgs[1], msgs[2]);
+                                int version = -1;
+                                try{
+                                    version = Integer.parseInt(msgs[3]);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+
+                                Worker worker = new Worker(msgs[0], msgs[1], msgs[2], version );
                                 crackingTh = new CrackingThread(worker, threadLocal.get());
                                 crackingTh.start();
 //                            String crackRes = worker.crack();
@@ -99,9 +107,9 @@ public class Worker {
                 }
                 String crackRes = worker.crack();
                 if (crackRes.isEmpty()){
-                    server.response("fail " + worker.counter);
+                    server.response(worker.id + "&fail " + worker.counter);
                 } else {
-                    server.response("success " + crackRes);
+                    server.response(worker.id + "&success " + crackRes);
                 }
                 return;
             }
@@ -154,11 +162,12 @@ public class Worker {
         }
     }
 
-    public Worker(String givenHash, String lowerRange, String upperRange) {
+    public Worker(String givenHash, String lowerRange, String upperRange, int id) {
         this.givenHash = givenHash;
         this.lowerRange = lowerRange;
         this.upperRange = upperRange;
         this.counter = 0;
+        this.id = id;
         logger.info(this.toString() + ": range from " + lowerRange +" to " + upperRange);
     }
 

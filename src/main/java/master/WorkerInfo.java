@@ -25,7 +25,7 @@ public class WorkerInfo {
         this.master = master;
     }
 
-    public void send(String md5, String startFrom, String endWith) throws IOException {
+    public void send(String md5, String startFrom, String endWith, int id) throws IOException {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -33,7 +33,7 @@ public class WorkerInfo {
                     WorkerInfo.this.targetMD5 = md5;
                     WorkerInfo.this.startFrom = startFrom;
                     WorkerInfo.this.endWith = endWith;
-                    toWorker.send(generateRequestString(md5, startFrom, endWith));
+                    toWorker.send(generateRequestString(md5, startFrom, endWith, id));
                     receive();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -48,21 +48,25 @@ public class WorkerInfo {
     }
 
     public void receive() throws IOException {
-        String request = null;
-        if ((request = toWorker.receive())!=null){
+        String request2 = null;
+        if ((request2 = toWorker.receive())!=null){
+            String[] split = request2.split("&");
+            int id = Integer.parseInt(split[0]);
+            String request = split[1];
             if (request.startsWith("success")){
                 String[] s = request.split(" ");
-                master.success(s[1], this);
+                master.success(id, s[1], this);
             }else if (request.startsWith("fail")){
-                master.fail(this);
-            }else if (request.startsWith("remove")){
-                String[] s = request.split(" ");
-                if (s.length == 1){
-                    master.remove(this);
-                }else{
-                    master.removeWith(s[1], s[2], s[3], this);
-                }
+                master.fail(id,this);
             }
+//            else if (request.startsWith("remove")){
+//                String[] s = request.split(" ");
+//                if (s.length == 1){
+//                    master.remove(this);
+//                }else{
+//                    master.removeWith(s[1], s[2], s[3], this);
+//                }
+//            }
         }
     }
 
@@ -74,10 +78,10 @@ public class WorkerInfo {
         toWorker.close();
     }
 
-    private String generateRequestString(String md5, String startFrom, String endWith){
+    private String generateRequestString(String md5, String startFrom, String endWith, int id){
         return md5 + " "
                 + startFrom + " "
-                + endWith;
+                + endWith + " " + id;
     }
 
     public String getTargetMD5() {

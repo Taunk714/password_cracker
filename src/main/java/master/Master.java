@@ -22,6 +22,9 @@ public class Master {
     private AtomicInteger availableWorker = new AtomicInteger(9);
     private AtomicInteger getResponse = new AtomicInteger(0);
 
+    private AtomicInteger status = new AtomicInteger(0);
+
+    private AtomicInteger crackerId = new AtomicInteger(0);
 
     public Master() throws IOException {
         new Thread(new Runnable() {
@@ -85,7 +88,8 @@ public class Master {
                     currentWorker.set(workerNum);
                     String md5 = split[1];
                     try {
-                        assign(md5);
+                        int i = crackerId.get();
+                        assign(md5, i);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -120,11 +124,11 @@ public class Master {
         }
     }
 
-    private void assign(String md5) throws IOException {
-        assign(md5, "AAAAA", "zzzzz");
+    private void assign(String md5, int id) throws IOException {
+        assign(md5, "AAAAA", "zzzzz", id);
     }
 
-    private void assign(String md5, String startFromAll, String endWithAll) throws IOException {
+    private void assign(String md5, String startFromAll, String endWithAll, int id) throws IOException {
         int workerNum = currentWorker.get();
         int[] sizePerWorker = new int[5];
         for (int i = 0; i < 5; i++) {
@@ -157,29 +161,37 @@ public class Master {
                 }
                 endWith.append(s);
             }
-            workerInfo.send(md5, startFrom.toString(), endWith.toString());
+            workerInfo.send(md5, startFrom.toString(), endWith.toString(), id);
         }
     }
+//
+//    public void remove(WorkerInfo workerInfo) throws IOException {
+//        workerList.remove(workerInfo);
+//        workerInfo.close();
+//    }
+//
+//    public void removeWith(String md5, String startFrom, String endWith, WorkerInfo workerInfo) throws IOException {
+//        workerList.remove(workerInfo);
+//        workerInfo.close();
+//        assign(md5, startFrom, endWith);
+//    }
 
-    public void remove(WorkerInfo workerInfo) throws IOException {
-        workerList.remove(workerInfo);
-        workerInfo.close();
-    }
-
-    public void removeWith(String md5, String startFrom, String endWith, WorkerInfo workerInfo) throws IOException {
-        workerList.remove(workerInfo);
-        workerInfo.close();
-        assign(md5, startFrom, endWith);
-    }
-
-    public void success(String ans, WorkerInfo workerInfo) throws IOException {
+    public void success(int id, String ans, WorkerInfo workerInfo) throws IOException {
+        if (id != crackerId.get()){
+            return;
+        }
         toInterface.response(ans);
+        crackerId.incrementAndGet();
+        getResponse.set(0);
         for (WorkerInfo info : workerList) {
             info.stop();
         }
     }
 
-    public void fail(WorkerInfo workerInfo) throws IOException {
+    public void fail(int id, WorkerInfo workerInfo) throws IOException {
+        if (id != crackerId.get()){
+            return;
+        }
         int i = getResponse.incrementAndGet();
         if (i == currentWorker.get()){
             toInterface.response("fail, can't find ans");

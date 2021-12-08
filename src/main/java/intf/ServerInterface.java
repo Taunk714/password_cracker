@@ -75,7 +75,7 @@ public class ServerInterface {
 										+ "Access-Control-Allow-Headers:*\r\n"
 										+ "Content-Type: text/html; charset=utf-8\r\n"
 										+ "Content-Length:" + receive.getBytes().length + "\r\n\r\n"
-										+ receive);
+										+ receive+time);
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
