@@ -172,7 +172,7 @@ public class Worker {
                 continue;
             }
             strToHash.append(a0);
-            for (char a1 = lowerRangeLst[1]; a1 <= 'z'; a1++) {
+            for (char a1 = 'A'; a1 <= 'z'; a1++) {
                 if (a1>= 91 && a1 <= 96){
                     continue;
                 }
