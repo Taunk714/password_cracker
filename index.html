@@ -16,7 +16,7 @@
           <div id ="app-2" v-bind:class = "{ active: isActive }">
             <table style = "display: inline; margin: 0 auto">
               <tr><td><input v-model="text" placeholder="Password" style = "font-size: 13px; height: 38px; width: 180px"></td></tr>
-              <tr><td><input v-model="worker_num"  placeholder="Number of workers" style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
+              <tr><td><input v-model="worker_num"  placeholder="Number of workers (default 3)" style = "font-size: 13px; height: 38px; width: 180px"></input></td></tr>
             </table>
             
             <button v-on:click="autogenerate" style = "font-size: 13px; height: 38px; width: 120px">AutoGenerate</button>
