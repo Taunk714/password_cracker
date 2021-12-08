@@ -68,9 +68,10 @@ public class ServerInterface {
 								System.out.println("receive:" + receive);
 
 								server.response("HTTP/1.1 200 OK\r\n"
-										+ "Content-Length: " + receive.getBytes().length + "\r\n"
-										+ "Content-Type: text/html; charset-utf-8\r\n"
-										+ "Access-Control-Allow-Origin: *\r\n"
+										+ "Access-Control-Allow-Origin:*\r\n"
+										+ "Access-Control-Allow-Headers:*\r\n"
+										+ "Content-Type: text/html; charset=utf-8\r\n"
+										+ "Content-Length:" + receive.getBytes().length + "\r\n\r\n"
 										+ receive);
 							} catch (IOException e) {
 								e.printStackTrace();
