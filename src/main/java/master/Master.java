@@ -183,6 +183,7 @@ public class Master {
         int i = getResponse.incrementAndGet();
         if (i == currentWorker.get()){
             toInterface.response("fail, can't find ans");
+            getResponse.set(0);
         }
 //        toInterface.response("fail");
 //        for (WorkerInfo info : workerList) {
