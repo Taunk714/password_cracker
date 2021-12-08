@@ -2,6 +2,7 @@ package worker;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 
 
@@ -14,7 +15,7 @@ public class Worker {
 
     public static final int PORT_NUM = 1211;
     public static final String MASTER_IP = "127.0.0.1";
-    private static final int MASTER_PORT = 1203;
+    private static final int MASTER_PORT = 1207;
 
     private static final Logger logger = Logger.getLogger("worker");
 
@@ -37,7 +38,7 @@ public class Worker {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    connectToMaster(1211+ finalI);
+                    connectToMaster(PORT_NUM+ finalI);
                     while(true){
                         try {
                             threadLocal.get().accept();
@@ -139,7 +140,7 @@ public class Worker {
             @Override
             public void run() {
                 try {
-                    Client client = new Client(MASTER_IP, 1207);
+                    Client client = new Client(MASTER_IP, MASTER_PORT);
                     client.send("register " + Inet4Address.getLocalHost() + " " + PORT_NUM);
                     String response = client.receive();
                     if (!response.equals("success")){
@@ -151,6 +152,35 @@ public class Worker {
                 }
             }
         }).start();
+    }
+
+    public static String getLocalIP() {
+        Enumeration<NetworkInterface> nifs = null;
+        try {
+            nifs = NetworkInterface.getNetworkInterfaces();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        while (nifs.hasMoreElements()) {
+            NetworkInterface nif = nifs.nextElement();
+            Enumeration<InetAddress> addresses = nif.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                InetAddress addr = addresses.nextElement();
+                if (addr instanceof Inet4Address) {
+                    if (nif.getName().equals("eth1")) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    public static String getMasterIP() {
+        String localIP = getLocalIP();
+        String[] partitions = localIP.split("\\.");
+        partitions[3] = "1";
+        return String.join(".", partitions);
     }
 
     public static void disconnectFromMaster() {
