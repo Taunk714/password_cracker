@@ -216,7 +216,7 @@ public class Worker {
                     continue;
                 }
                 strToHash.append(a1);
-                if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                if (strToHash.toString().compareTo(upperRange.substring(0,2)) > 0 || (strToHash.toString().compareTo(lowerRange.substring(0,2)) < 0)){
                     strToHash.deleteCharAt(1);
                     continue;
                 }
@@ -225,7 +225,7 @@ public class Worker {
                         continue;
                     }
                     strToHash.append(a2);
-                    if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                    if (strToHash.toString().compareTo(upperRange.substring(0,3)) > 0 || (strToHash.toString().compareTo(lowerRange.substring(0,3)) < 0)){
                         strToHash.deleteCharAt(2);
                         continue;
                     }
@@ -234,7 +234,7 @@ public class Worker {
                             continue;
                         }
                         strToHash.append(a3);
-                        if (strToHash.toString().compareTo(upperRange) > 0 || (strToHash.toString().compareTo(lowerRange) < 0)){
+                        if (strToHash.toString().compareTo(upperRange.substring(0,4)) > 0 || (strToHash.toString().compareTo(lowerRange.substring(0,4)) < 0)){
                             strToHash.deleteCharAt(3);
                             continue;
                         }
