@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class ServerInterface {
 
-	private static String masterIp = "127.0.0.1";
+	private static String masterIp = "10.10.1.1";
 	private static int masterPort = 1203;
 
 	private static final int _PORT = 1202;

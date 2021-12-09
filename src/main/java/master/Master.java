@@ -43,7 +43,7 @@ public class Master {
                         while((request = toWorker.receive())!= null){
                             if (request.startsWith("register")){
                                 String[] s = request.split(" ");
-                                workerList.add(new WorkerInfo("127.0.0.1", Integer.parseInt(s[2]), Master.this));
+                                workerList.add(new WorkerInfo(s[1], Integer.parseInt(s[2]), Master.this));
                                 currentWorker.incrementAndGet();
                                 availableWorker.incrementAndGet();
                                 System.out.println("worker register");

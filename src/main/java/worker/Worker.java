@@ -14,7 +14,7 @@ public class Worker {
 
 
     public static final int PORT_NUM = 1211;
-    public static final String MASTER_IP = "127.0.0.1";
+    public static final String MASTER_IP = getMasterIP();
     private static final int MASTER_PORT = 1207;
 
     private static final Logger logger = Logger.getLogger("worker");
@@ -33,7 +33,7 @@ public class Worker {
     private String upperRange;
 
     public static void main(String args[]){
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
             int finalI = i;
             new Thread(new Runnable() {
                 @Override
@@ -141,7 +141,7 @@ public class Worker {
             public void run() {
                 try {
                     Client client = new Client(MASTER_IP, MASTER_PORT);
-                    client.send("register " + Inet4Address.getLocalHost() + " " + PORT_NUM);
+                    client.send("register " + getLocalIP() + " " + PORT_NUM);
                     String response = client.receive();
                     if (!response.equals("success")){
                         disconnectFromMaster();
